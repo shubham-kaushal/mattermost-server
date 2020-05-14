@@ -6211,6 +6211,10 @@
     "translation": "Unable to commit transaction."
   },
   {
+    "id": "store.sql_channel.sidebar_categories.delete_invalid.app_error",
+    "translation": "Unable to delete non-custom category."
+  },
+  {
     "id": "store.sql_channel.sidebar_categories.open_transaction.app_error",
     "translation": "Failed to open the database transaction."
   },
