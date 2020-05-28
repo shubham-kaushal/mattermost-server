@@ -132,6 +132,7 @@ type ChannelStore interface {
 	SaveDirectChannel(channel *model.Channel, member1 *model.ChannelMember, member2 *model.ChannelMember) (*model.Channel, error)
 	Update(channel *model.Channel) (*model.Channel, *model.AppError)
 	UpdateSidebarChannelCategoryOnMove(channel *model.Channel, newTeamId string) *model.AppError
+	ClearSidebarOnTeamLeave(userId, teamId string) *model.AppError
 	Get(id string, allowFromCache bool) (*model.Channel, *model.AppError)
 	InvalidateChannel(id string)
 	InvalidateChannelByName(teamId, name string)
@@ -207,11 +208,9 @@ type ChannelStore interface {
 	ResetAllChannelSchemes() *model.AppError
 	ClearAllCustomRoleAssignments() *model.AppError
 	MigratePublicChannels() error
-	MigrateDirectGroupMessagesToSidebarChannels(lastChannelId, lastUserId string, runningOrder int64) (map[string]interface{}, *model.AppError)
 	MigrateSidebarCategories(fromTeamId, fromUserId string) (map[string]interface{}, *model.AppError)
 	CreateInitialSidebarCategories(user *model.User, teamId string) *model.AppError
 	MigrateFavoritesToSidebarChannels(lastUserId string, runningOrder int64) (map[string]interface{}, *model.AppError)
-	MigrateChannelsToSidebarChannels(lastChannelId, lastUserId string, runningOrder int64) (map[string]interface{}, *model.AppError)
 	GetSidebarCategories(userId, teamId string) (*model.OrderedSidebarCategories, *model.AppError)
 	GetSidebarCategory(categoryId string) (*model.SidebarCategoryWithChannels, *model.AppError)
 	GetSidebarCategoryOrder(userId, teamId string) ([]string, *model.AppError)

@@ -6532,24 +6532,19 @@ func testSidebarChannelsMigration(t *testing.T, ss store.Store) {
 		ss.Channel().PermanentDelete(channel1.Id)
 	}()
 
-	u1 := &model.User{}
-	u1.Email = MakeEmail()
-	u1.Nickname = model.NewId()
-	_, err = ss.User().Save(u1)
-	require.Nil(t, err)
-	u2 := &model.User{}
-	u2.Email = MakeEmail()
-	u2.Nickname = model.NewId()
-	_, err = ss.User().Save(u2)
-	require.Nil(t, err)
-	_, err = ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u1.Id}, -1)
-	require.Nil(t, err)
-	_, err = ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u2.Id}, -1)
-	require.Nil(t, err)
+	var users []*model.User
+	for i := 0; i < 3; i++ {
+		u := &model.User{Email: MakeEmail(), Nickname: model.NewId()}
+		_, err = ss.User().Save(u)
+		require.Nil(t, err)
+		_, err = ss.Team().SaveMember(&model.TeamMember{TeamId: teamId, UserId: u.Id}, -1)
+		require.Nil(t, err)
+		users = append(users, u)
+	}
 
 	_, err = ss.Channel().SaveMember(&model.ChannelMember{
 		ChannelId:   channel1.Id,
-		UserId:      u1.Id,
+		UserId:      users[0].Id,
 		NotifyProps: model.GetDefaultChannelNotifyProps(),
 	})
 	require.Nil(t, err)
@@ -6558,41 +6553,67 @@ func testSidebarChannelsMigration(t *testing.T, ss store.Store) {
 		{
 			Category: model.PREFERENCE_CATEGORY_FAVORITE_CHANNEL,
 			Name:     channel1.Id,
-			UserId:   u1.Id,
+			UserId:   users[0].Id,
 			Value:    "true",
 		},
 	})
 	require.Nil(t, err)
 
-	_, err = ss.Channel().CreateDirectChannel(u1, u2)
+	_, err = ss.Channel().CreateDirectChannel(users[0], users[1])
 	require.Nil(t, err)
 
 	t.Run("MigrateSidebarCategories", func(t *testing.T) {
 		_, err2 := ss.Channel().MigrateSidebarCategories(strings.Repeat("0", 26), strings.Repeat("0", 26))
 		require.Nil(t, err2)
-		res, err2 := ss.Channel().GetSidebarCategories(u1.Id, teamId)
+		res, err2 := ss.Channel().GetSidebarCategories(users[0].Id, teamId)
 		require.Nil(t, err2)
 		require.Len(t, res.Categories, 3)
 	})
 
-	t.Run("MigrateChannelsToSidebarChannels", func(t *testing.T) {
-		_, err = ss.Channel().MigrateChannelsToSidebarChannels(strings.Repeat("0", 26), strings.Repeat("0", 26), 0)
-		require.Nil(t, err)
-	})
 	t.Run("MigrateFavoritesToSidebarChannels", func(t *testing.T) {
 		_, err = ss.Channel().MigrateFavoritesToSidebarChannels(strings.Repeat("0", 26), 0)
 		require.Nil(t, err)
 	})
-	t.Run("MigrateDirectGroupMessagesToSidebarChannels", func(t *testing.T) {
-		_, err = ss.Channel().MigrateDirectGroupMessagesToSidebarChannels(strings.Repeat("0", 26), strings.Repeat("0", 26), 0)
-		require.Nil(t, err)
-	})
 	t.Run("GetSidebarCategories", func(t *testing.T) {
-		res, err := ss.Channel().GetSidebarCategories(u1.Id, teamId)
+		res, err := ss.Channel().GetSidebarCategories(users[0].Id, teamId)
 		require.Nil(t, err)
 		require.Len(t, res.Categories[0].Channels, 1)
 		require.Len(t, res.Categories[1].Channels, 1)
 		require.Len(t, res.Categories[2].Channels, 1)
+	})
+
+	t.Run("GetSidebarCategoriesWithoutNewChannel", func(t *testing.T) {
+		channel3, err := ss.Channel().Save(&model.Channel{
+			DisplayName:      model.NewId(),
+			Name:             model.NewId(),
+			TeamId:           teamId,
+			Type:             model.CHANNEL_PRIVATE,
+			GroupConstrained: model.NewBool(true),
+		}, 10)
+		require.Nil(t, err)
+		channel4, err := ss.Channel().CreateDirectChannel(users[0], users[2])
+		require.Nil(t, err)
+
+		defer func() {
+			ss.Channel().PermanentDeleteMembersByChannel(channel3.Id)
+			ss.Channel().PermanentDelete(channel3.Id)
+			ss.Channel().PermanentDeleteMembersByChannel(channel4.Id)
+			ss.Channel().PermanentDelete(channel4.Id)
+			ss.Channel().PermanentDeleteByTeam(teamId)
+		}()
+
+		_, err = ss.Channel().SaveMember(&model.ChannelMember{
+			ChannelId:   channel3.Id,
+			UserId:      users[0].Id,
+			NotifyProps: model.GetDefaultChannelNotifyProps(),
+		})
+		require.Nil(t, err)
+
+		res, err := ss.Channel().GetSidebarCategories(users[0].Id, teamId)
+		require.Nil(t, err)
+		require.Len(t, res.Categories[0].Channels, 1)
+		require.Len(t, res.Categories[1].Channels, 2)
+		require.Len(t, res.Categories[2].Channels, 2)
 	})
 }
 

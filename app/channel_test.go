@@ -1739,6 +1739,10 @@ func TestSidebarCategory(t *testing.T) {
 	basicChannel2 := th.CreateChannel(th.BasicTeam)
 	defer th.App.PermanentDeleteChannel(basicChannel2)
 	user := th.CreateUser()
+	defer th.App.Srv().Store.User().PermanentDelete(user.Id)
+	th.LinkUserToTeam(user, th.BasicTeam)
+	th.AddUserToChannel(user, basicChannel2)
+
 	var createdCategory *model.SidebarCategoryWithChannels
 	t.Run("CreateSidebarCategory", func(t *testing.T) {
 		catData := model.SidebarCategoryWithChannels{
@@ -1770,11 +1774,23 @@ func TestSidebarCategory(t *testing.T) {
 	t.Run("UpdateSidebarCategoryOrder", func(t *testing.T) {
 		err := th.App.UpdateSidebarCategoryOrder(user.Id, th.BasicTeam.Id, []string{th.BasicChannel.Id, basicChannel2.Id})
 		require.NotNil(t, err, "Should return error due to invalid order")
+
+		actualOrder, err := th.App.GetSidebarCategoryOrder(user.Id, th.BasicTeam.Id)
+		require.Nil(t, err, "Should fetch order successfully")
+
+		actualOrder[2], actualOrder[3] = actualOrder[3], actualOrder[2]
+		err = th.App.UpdateSidebarCategoryOrder(user.Id, th.BasicTeam.Id, actualOrder)
+		require.Nil(t, err, "Should update order successfully")
+
+		actualOrder[2] = "asd"
+		err = th.App.UpdateSidebarCategoryOrder(user.Id, th.BasicTeam.Id, actualOrder)
+		require.NotNil(t, err, "Should return error due to invalid id")
 	})
 
 	t.Run("GetSidebarCategoryOrder", func(t *testing.T) {
 		catOrder, err := th.App.GetSidebarCategoryOrder(user.Id, th.BasicTeam.Id)
 		require.Nil(t, err, "Expected no error")
-		require.Len(t, catOrder, 1)
+		require.Len(t, catOrder, 4)
+		require.Equal(t, catOrder[1], createdCategory.Id, "the newly created category should be after favorites")
 	})
 }

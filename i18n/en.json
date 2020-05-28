@@ -4044,7 +4044,7 @@
   },
   {
     "id": "ent.compliance.csv.metadata.json.zipfile.appError",
-    "translation": "Unable to create the zip file"
+    "translation": ""
   },
   {
     "id": "ent.compliance.csv.post.export.appError",
@@ -5923,6 +5923,10 @@
     "translation": "Missing TO address."
   },
   {
+    "id": "searchengine.bleve.disabled.error",
+    "translation": "Error purging Bleve indexes: engine is disabled"
+  },
+  {
     "id": "sidebar.category.channels",
     "translation": "Channels"
   },
@@ -5933,10 +5937,6 @@
   {
     "id": "sidebar.category.favorites",
     "translation": "Favorites"
-  },
-  {
-    "id": "searchengine.bleve.disabled.error",
-    "translation": "Error purging Bleve indexes: engine is disabled"
   },
   {
     "id": "store.insert_error",
@@ -5989,6 +5989,14 @@
   {
     "id": "store.sql_bot.get.missing.app_error",
     "translation": "Bot does not exist."
+  },
+  {
+    "id": "store.sql_channel.CreateInitialSidebarCategories.commit_transaction.app_error",
+    "translation": ""
+  },
+  {
+    "id": "store.sql_channel.CreateInitialSidebarCategories.open_transaction.app_error",
+    "translation": ""
   },
   {
     "id": "store.sql_channel.MigrateSidebarCategories.app_error",
@@ -6179,22 +6187,6 @@
     "translation": "Failed to update the channel member."
   },
   {
-    "id": "store.sql_channel.migrate_channels_sidebar.open_transaction.app_error",
-    "translation": "Failed to open the database transaction."
-  },
-  {
-    "id": "store.sql_channel.migrate_channels_sidebar.select.app_error",
-    "translation": "Failed to build query."
-  },
-  {
-    "id": "store.sql_channel.migrate_dms.open_transaction.app_error",
-    "translation": "Failed to open the database transaction."
-  },
-  {
-    "id": "store.sql_channel.migrate_dms.select.app_error",
-    "translation": "Failed to build query."
-  },
-  {
     "id": "store.sql_channel.migrate_favorites.open_transaction.app_error",
     "translation": "Failed to open the database transaction."
   },
@@ -6341,6 +6333,10 @@
   {
     "id": "store.sql_channel.sidebar_categories.delete_invalid.app_error",
     "translation": "Unable to delete non-custom category."
+  },
+  {
+    "id": "store.sql_channel.sidebar_categories.invalid_update_fields",
+    "translation": "Invalid field values during category update."
   },
   {
     "id": "store.sql_channel.sidebar_categories.open_transaction.app_error",

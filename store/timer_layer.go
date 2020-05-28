@@ -552,6 +552,22 @@ func (s *TimerLayerChannelStore) ClearCaches() {
 	}
 }
 
+func (s *TimerLayerChannelStore) ClearSidebarOnTeamLeave(userId string, teamId string) *model.AppError {
+	start := timemodule.Now()
+
+	resultVar0 := s.ChannelStore.ClearSidebarOnTeamLeave(userId, teamId)
+
+	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
+	if s.Root.Metrics != nil {
+		success := "false"
+		if resultVar0 == nil {
+			success = "true"
+		}
+		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.ClearSidebarOnTeamLeave", success, elapsed)
+	}
+	return resultVar0
+}
+
 func (s *TimerLayerChannelStore) CountPostsAfter(channelId string, timestamp int64, userId string) (int, *model.AppError) {
 	start := timemodule.Now()
 
@@ -1485,38 +1501,6 @@ func (s *TimerLayerChannelStore) MigrateChannelMembers(fromChannelId string, fro
 			success = "true"
 		}
 		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.MigrateChannelMembers", success, elapsed)
-	}
-	return resultVar0, resultVar1
-}
-
-func (s *TimerLayerChannelStore) MigrateChannelsToSidebarChannels(lastChannelId string, lastUserId string, runningOrder int64) (map[string]interface{}, *model.AppError) {
-	start := timemodule.Now()
-
-	resultVar0, resultVar1 := s.ChannelStore.MigrateChannelsToSidebarChannels(lastChannelId, lastUserId, runningOrder)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if resultVar1 == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.MigrateChannelsToSidebarChannels", success, elapsed)
-	}
-	return resultVar0, resultVar1
-}
-
-func (s *TimerLayerChannelStore) MigrateDirectGroupMessagesToSidebarChannels(lastChannelId string, lastUserId string, runningOrder int64) (map[string]interface{}, *model.AppError) {
-	start := timemodule.Now()
-
-	resultVar0, resultVar1 := s.ChannelStore.MigrateDirectGroupMessagesToSidebarChannels(lastChannelId, lastUserId, runningOrder)
-
-	elapsed := float64(timemodule.Since(start)) / float64(timemodule.Second)
-	if s.Root.Metrics != nil {
-		success := "false"
-		if resultVar1 == nil {
-			success = "true"
-		}
-		s.Root.Metrics.ObserveStoreMethodDuration("ChannelStore.MigrateDirectGroupMessagesToSidebarChannels", success, elapsed)
 	}
 	return resultVar0, resultVar1
 }
